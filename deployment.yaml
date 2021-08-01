@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: WxChatRebot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: WxChatRebot
+  template:
+    metadata:
+      labels:
+        app: WxChatRebot
+    spec:
+      containers:
+        - name: WxChatRebot
+          image: $image
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: WxChatRebot
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+      name: WxChatRebot
+  selector:
+    app: WxChatRebot

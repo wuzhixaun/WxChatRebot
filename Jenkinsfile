@@ -1,19 +1,8 @@
 def label = "slave-${UUID.randomUUID().toString()}"
 
-// 引用共享库
-@Library("jenkins_shareLibrary")
-
-// 应用共享库中的方法
-def tools = new org.devops.tools()
-def sonarapi = new org.devops.sonarAPI()
-def sendEmail = new org.devops.sendEmail()
-def build = new org.devops.build()
-def sonar = new org.devops.sonarqube()
-
 podTemplate(label: label, containers: [
   containerTemplate(name: 'jdk-maven', image: 'appinair/jdk11-maven:latest', command: 'cat', ttyEnabled: true),
   containerTemplate(name: 'docker', image: 'docker:latest', command: 'cat', ttyEnabled: true),
-  containerTemplate(name: 'sonar-scanner', image: 'registry.cn-hangzhou.aliyuncs.com/rookieops/sonar-scanner:latest', command: 'cat', ttyEnabled: true),
   containerTemplate(name: 'kubectl', image: 'cnych/kubectl', command: 'cat', ttyEnabled: true)
 ], serviceAccount: 'jenkins-admin', volumes: [
   hostPathVolume(mountPath: '/home/jenkins/.kube', hostPath: '/root/.kube'),
@@ -38,49 +27,32 @@ podTemplate(label: label, containers: [
     
     stage('代码编译打包') {
       container('jdk-maven') {
-        script{
-            tools.PrintMes("编译打包","blue")
-            build.DockerBuild("${buildShell}")
-        }
+        echo "代码编译打包阶段"
+        sh "mvn clean package -Dmaven.test.skip=true"
       }
     }
     
-    // 代码扫描
-            stage('CodeScanner') {
-                steps {
-                    container('sonar-scanner') {
-                        script {
-                            tools.PrintMes("代码扫描","green")
-                            tools.PrintMes("搜索项目","green")
-                            result = sonarapi.SearchProject("${JOB_NAME}")
-                            println(result)
+    stage('构建 Docker 镜像') {
+      withCredentials([usernamePassword(credentialsId: 'dock-auth-ali', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USER')]) {
+          container('docker') {
+            echo "3. 构建 Docker 镜像阶段"
+            sh """
+              docker login ${registryUrl} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
+              docker build -t ${image} .
+              docker push ${image}
+              """
+          }
+      }
+    }
     
-                            if (result == "false"){
-                                println("${JOB_NAME}---项目不存在,准备创建项目---> ${JOB_NAME}！")
-                                sonarapi.CreateProject("${JOB_NAME}")
-                            } else {
-                                println("${JOB_NAME}---项目已存在！")
-                            }
-    
-                            tools.PrintMes("代码扫描","green")
-                            sonar.SonarScan("${JOB_NAME}","${JOB_NAME}","src")
-    
-                            sleep 10
-                            tools.PrintMes("获取扫描结果","green")
-                            result = sonarapi.GetProjectStatus("${JOB_NAME}")
-    
-                            println(result)
-                            if (result.toString() == "ERROR"){
-                                toemail.Email("代码质量阈错误！请及时修复！",userEmail)
-                                error " 代码质量阈错误！请及时修复！"
-    
-                            } else {
-                                println(result)
-                            }
-                        }
-                    }
-                }
-            }
-    
+    stage('运行 Kubectl') {
+      container('kubectl') {
+        echo "查看 K8S 集群 Pod 列表"
+        sh """
+          sed -i 's#\$image#${image}#' deployment.yaml
+          """
+        kubernetesDeploy(enableConfigSubstitution: false, kubeconfigId: 'kubeconfig1', configs: 'deployment.yaml')
+      }
+    }
   }
 }
