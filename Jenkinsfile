@@ -17,7 +17,7 @@ podTemplate(label: label, containers: [
     def imageTag = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
     // 仓库地址
     def registryUrl = "registry-vpc.cn-shenzhen.aliyuncs.com"
-    def imageEndpoint = "wuzhixuan/WxChatRebot"
+    def imageEndpoint = "wuzhixuan/wx_chat_rebot"
     // 镜像
     def image = "${registryUrl}/${imageEndpoint}:${imageTag}"
     
