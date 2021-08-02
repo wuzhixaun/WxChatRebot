@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: WxChatRebot
+  name: wx-chat-rebot
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: WxChatRebot
+      app: wx-chat-rebot
   template:
     metadata:
       labels:
-        app: WxChatRebot
+        app: wx-chat-rebot
     spec:
       containers:
         - name: wx_chat_rebot
@@ -23,11 +23,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: WxChatRebot
+  name: wx-chat-rebot
 spec:
   ports:
     - port: 80
       targetPort: 8080
-      name: WxChatRebot
+      name: wx-chat-rebot
   selector:
-    app: WxChatRebot
+    app: wx-chat-rebot

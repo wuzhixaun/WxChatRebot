@@ -63,7 +63,7 @@ public class GetTencentMaterialFileUtils {
 
 
     public static void main(String[] args) {
-        // 机器人对应key
+        // 机器人对应key+
         String webhook = "**********";
 
         final String mediaId = getMediaId("E:\\Users\\admin\\Desktop\\test.xlsx", webhook);
