@@ -13,7 +13,7 @@ spec:
         app: wx-chat-rebot
     spec:
       containers:
-        - name: wx_chat_rebot
+        - name: wx-chat-rebot
           image: $image
           imagePullPolicy: Always
           ports:
