@@ -73,4 +73,15 @@ public class MaterialFileVo {
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
+
+    @Override
+    public String toString() {
+        return "MaterialFileVo{" +
+                "errcode=" + errcode +
+                ", errmsg='" + errmsg + '\'' +
+                ", type='" + type + '\'' +
+                ", mediaId='" + mediaId + '\'' +
+                ", createdAt='" + createdAt + '\'' +
+                '}';
+    }
 }

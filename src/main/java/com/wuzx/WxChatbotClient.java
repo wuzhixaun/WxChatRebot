@@ -1,10 +1,10 @@
 package com.wuzx;
 
 import com.alibaba.fastjson.JSONObject;
+import com.wuzx.contants.RobotConstants;
 import com.wuzx.message.Message;
 import com.wuzx.model.SendResult;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-
 /**
  *
  * api <a href='https://work.weixin.qq.com/api/doc/90000/90136/91770'>接口地址</>
@@ -26,22 +25,21 @@ import java.io.IOException;
  * @Description 企业微信机器人发送消息
  * @createTime 2021年07月26日 16:01:00
  */
-
 public class WxChatbotClient {
-    private static final Logger log = LoggerFactory.getLogger(WxChatbotClient.class);
+    private final static Logger logger = LoggerFactory.getLogger(WxChatbotClient.class);
 
-    private static String rebotPath = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=%s";
+
     static HttpClient httpclient = HttpClients.createDefault();
 
     public static SendResult send(String webHookKey, Message message)  {
-        log.info("WxChatbotClient send webhook {} message {} ", webHookKey, message);
+        logger.info("WxChatbotClient send webhook {} message {} ", webHookKey, message);
         if (StringUtils.isBlank(webHookKey)) {
-            log.info("WxChatbotClient send webHookKey is empry");
+            logger.info("WxChatbotClient send webHookKey is empry");
             return new SendResult();
         }
         try {
 
-            HttpPost httppost = new HttpPost(String.format(rebotPath, webHookKey));
+            HttpPost httppost = new HttpPost(String.format(RobotConstants.ROBOT_PATH, webHookKey));
             httppost.addHeader("Content-Type", "application/json; charset=utf-8");
             StringEntity se = new StringEntity(message.toJsonString(), "utf-8");
             httppost.setEntity(se);
@@ -60,7 +58,7 @@ public class WxChatbotClient {
             return sendResult;
         } catch (IOException e) {
             e.printStackTrace();
-            log.error("WxChatbotClient send IOException {}", e.getMessage());
+            logger.error("WxChatbotClient send IOException {}", e.getMessage());
         }
         return null;
     }
